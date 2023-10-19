@@ -3,56 +3,52 @@ import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 
 import { PagesPaths } from '@/shared/config/router';
-import { useAppSelector } from '@/shared/store';
 import { Button } from '@/shared/ui';
 
-// import { IPost } from '../../api';
+import { IPost } from '../../api';
 
 import styles from './PostItem.module.scss';
 
 interface IPostItem {
-  index: number;
+  post: IPost;
   customClasses?: string;
-  style: React.CSSProperties;
-  onLastItem?: () => void;
+  style?: React.CSSProperties;
+  // isLastItem?: boolean;
+  // nextPage?: () => unknown;
 }
 
-export function PostItem({ index, style, customClasses = '' }: IPostItem) {
+export function PostItem({ post, style = {}, customClasses = '' }: IPostItem) {
   const itemRef = useRef<HTMLLIElement>(null);
 
-  const { id, title, body } = useAppSelector((state) => state.posts.posts[index]);
+  const { id, title, body } = post;
 
   // useEffect(() => {
-  //   const item = itemRef.current;
+  //   const lastElem = isLastItem && itemRef.current;
 
-  //   const intersectionObserver = new IntersectionObserver(
+  //   const io = new IntersectionObserver(
   //     (entries) => {
-  //       entries.forEach((entry) => {
-  //         if (entry.isIntersecting) {
-  //           onLastItem && onLastItem();
+  //       for (const entry of entries) {
+  //         if (entry.isIntersecting && isLastItem) {
+  //           nextPage();
+  //           console.log('loading more');
   //         }
-  //       });
+  //       }
   //     },
   //     {
-  //       rootMargin: '0px 0px 20px 0px',
+  //       rootMargin: '0px 0px 100px 0px',
   //     }
   //   );
 
-  //   if (item && isLast) {
-  //     intersectionObserver.observe(item);
-  //   }
+  //   lastElem && io.observe(lastElem);
 
-  //   return () => {
-  //     item && intersectionObserver.unobserve(item);
-  //   };
-  // }, [onLastItem, itemRef, isLast]);
+  //   return () => io.disconnect();
+  // }, [nextPage, itemRef, isLastItem]);
 
   return (
     <li
       className={clsx(styles.PostItem, customClasses)}
       style={{
         ...style,
-        // top: `${parseFloat(String(style.top)) + 20 * (id - 1)}px`,
       }}
       ref={itemRef}
     >
@@ -68,4 +64,3 @@ export function PostItem({ index, style, customClasses = '' }: IPostItem) {
     </li>
   );
 }
-

@@ -1,84 +1,159 @@
-// import { useRef, useCallback, useDeferredValue } from 'react';
-import { FixedSizeList as List } from 'react-window';
-import AutoSizer from 'react-virtualized-auto-sizer';
-import InfiniteLoader from 'react-window-infinite-loader';
+import { useRef, useEffect, useState } from 'react';
+import { useVirtualizer, useWindowVirtualizer } from '@tanstack/react-virtual';
 
 import { PostItem, useGetPostsQuery } from '@/entities/Post';
-import { useAppSelector } from '@/shared/store';
 
-import { useInfiniteScroll, useNextPage } from '../../model';
+import { useInfiniteScroll } from '../../model';
 
 import styles from './PostsList.module.scss';
 
 const postItemHeight = 86;
 
-export function PostsList() {
-  // const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+interface ILoaderItemProps {
+  style?: React.CSSProperties;
+  myRef?: React.MutableRefObject<HTMLDivElement | null>;
+}
 
-  const { start, end } = useInfiniteScroll();
+const LoaderItem = ({ myRef, style = {} }: ILoaderItemProps) => {
+  // const { dispatchNextPage, page, limit } = useInfiniteScroll();
 
-  const { data, isLoading, isSuccess } = useGetPostsQuery({ start, end });
-  data;
-  const posts = useAppSelector((state) => state.posts.posts);
+  // useEffect(() => {
+  //   const lastElem = myRef.current;
 
-  const dispatchNextPage = useNextPage();
-
-  // const loadMorePosts = useDeferredValue(
-  //   useCallback(
-  //     ({ scrollOffset }: ListOnScrollProps) => {
-  //       const scrollContainer = scrollContainerRef.current;
-  //       if (!scrollContainer || !isSuccess || isLoading) return;
-  //       const scrollContainerViewHeight = scrollContainer.clientHeight;
-  //       const scrollContainerAllHeight = scrollContainer.scrollHeight;
-
-  //       console.log('scrollOffset', scrollOffset);
-  //       console.log('scrollContainerViewHeight', scrollContainerViewHeight);
-  //       console.log('scrollContainerAllHeight', scrollContainerAllHeight);
-  //       console.log('scrollOffset + scrollContainerViewHeight', scrollOffset + scrollContainerViewHeight);
-
-  //       console.log('scrollOffset + scrollContainerViewHeight >= scrollContainerAllHeight', scrollOffset + scrollContainerViewHeight >= scrollContainerAllHeight);
-
-  //       if (scrollOffset + scrollContainerViewHeight >= scrollContainerAllHeight - 50) {
-  //         dispatchNextPage();
+  //   const io = new IntersectionObserver(
+  //     (entries) => {
+  //       for (const entry of entries) {
+  //         if (entry.isIntersecting) {
+  //           dispatchNextPage({ page: page + 1, limit });
+  //           console.log('loading more');
+  //         }
   //       }
   //     },
-  //     [scrollContainerRef, dispatchNextPage, isSuccess, isLoading]
-  //   )
-  // );
+  //     {
+  //       rootMargin: '0px 0px 100px 0px',
+  //     }
+  //   );
 
-  const loadMorePosts = (startIndex: number, stopIndex: number) => {
-    console.log('loadMorePosts');
-    dispatchNextPage({ start: startIndex, end: stopIndex });
-  };
+  //   lastElem && io.observe(lastElem);
+
+  //   return () => io.disconnect();
+  // }, [dispatchNextPage, limit, page, myRef]);
 
   return (
-    <section className={styles.PostsList}>
-      {isSuccess ? (
-        <AutoSizer>
-          {({ width, height }) => (
-            <InfiniteLoader
-              loadMoreItems={loadMorePosts}
-              itemCount={posts.length}
-              isItemLoaded={(index) => index < posts.length}
-            >
-              {({ onItemsRendered, ref }) => (
-                <List
-                  innerElementType={'ol'}
-                  width={width}
-                  height={height}
-                  itemCount={posts.length}
-                  itemSize={postItemHeight}
-                  ref={ref}
-                  onItemsRendered={onItemsRendered}
-                  // outerRef={scrollContainerRef}
-                  // onScroll={loadMorePosts}
-                >
-                  {PostItem}
-                </List>
-              )}
-            </InfiniteLoader>
-          )}
-        </AutoSizer>
+    <div
+      ref={myRef}
+      style={style}
+    >
+      Loading more...
+    </div>
+  );
+};
+
+export function PostsList() {
+  const [myRef, setMyRef] = useState<HTMLDivElement | null>(null);
+  // const endOfListRef = useRef<HTMLDivElement>(null);
+  const parentElementRef = useRef<HTMLElement | null>(null);
+
+  const { limit, page, dispatchNextPage, hasNextPage } = useInfiniteScroll();
+
+  const { data, isLoading, isSuccess } = useGetPostsQuery({ limit, page });
+
+  const posts = data ?? [];
+
+  const virtualizedList = useVirtualizer({
+    // count: 100,
+    count: hasNextPage ? posts.length + 1 : posts.length,
+    estimateSize: () => postItemHeight,
+    getScrollElement: () => parentElementRef.current,
+  });
+
+  const virtualItems = virtualizedList.getVirtualItems();
+
+  useEffect(() => {
+    const lastElem = myRef;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !isLoading) {
+            console.log('fetch page', page);
+            dispatchNextPage({ page: page + 1, limit });
+            console.log('loading more');
+          }
+          console.log('observer');
+        }
+      },
+      {
+        rootMargin: '0px 0px 100px 0px',
+      }
+    );
+
+    lastElem && io.observe(lastElem);
+
+    return () => io.disconnect();
+  }, [dispatchNextPage, limit, page, myRef, isLoading]);
+
+  // useEffect(() => {
+  //   const [lastItem] = [...virtualItems].reverse();
+  //   console.log('lastItem', lastItem);
+
+  //   if (!lastItem) {
+  //     return;
+  //   }
+  //   console.log();
+  //   if (lastItem.index >= posts.length - 1 && hasNextPage && !isLoading) {
+  //     dispatchNextPage({ page: page + 1, limit });
+  //   }
+  // }, [hasNextPage, isLoading, posts.length, virtualItems, dispatchNextPage, limit, page]);
+
+  return (
+    <section
+      ref={parentElementRef}
+      className={styles.PostsList__wrapper}
+    >
+      {isSuccess && !isLoading ? (
+        <ol
+          className={styles.PostsList}
+          style={{
+            height: `${virtualizedList.getTotalSize()}px`,
+            position: 'relative',
+          }}
+        >
+          {virtualItems.map((virtualItem) => {
+            const isLoaderItem = virtualItem.index > posts.length - 1;
+            // const isLastItem = virtualItem.index === posts.length - 1;
+            const post = posts[virtualItem.index];
+
+            // if (!hasNextPage)
+            //   return (
+            //     <div
+            //       key={virtualItem.key}
+            //       style={{ height: virtualItem.size, transform: `translateY(${virtualItem.start}px)` }}
+            //     >
+            //       End of list
+            //     </div>
+            //   );
+
+            if (isLoaderItem)
+              return (
+                <LoaderItem
+                  key={virtualItem.key}
+                  style={{ height: virtualItem.size, transform: `translateY(${virtualItem.start}px)` }}
+                />
+              );
+
+            return (
+              <PostItem
+                post={post}
+                key={virtualItem.key}
+                style={{ height: virtualItem.size, transform: `translateY(${virtualItem.start}px)` }}
+                // isLastItem={isLastItem}
+                // nextPage={() => dispatchNextPage({ page: page + 1, limit })}
+              />
+            );
+          })}
+          <div ref={setMyRef}></div>
+        </ol>
       ) : (
         <div>No posts</div>
       )}
@@ -86,4 +161,3 @@ export function PostsList() {
     </section>
   );
 }
-

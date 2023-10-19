@@ -1,22 +1,22 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 interface INextPostsAction {
-  payload: { start: number; end: number };
+  payload: { page: number; limit: number };
   type: string;
 }
 
 const postsListSlice = createSlice({
   name: 'postsList',
   initialState: {
-    start: 0,
-    end: 16,
+    page: 1,
     maxPage: 10,
     limit: 10,
   },
   reducers: {
-    nextPosts(state, { payload: { start, end } }: INextPostsAction) {
-      state.start = start;
-      state.end = end;
+    nextPosts(state, { payload: { page, limit } }: INextPostsAction) {
+      if (page > state.maxPage) return;
+      state.page = page;
+      state.limit = limit;
     },
   },
 });
