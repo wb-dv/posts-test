@@ -1,0 +1,17 @@
+@import '@shared/ui/vars.scss';
+
+.Container {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 0 40px;
+
+  @include adpt-tab {
+    padding: 0 25px;
+  }
+
+  @include adpt-mob {
+    padding: 0 15px;
+  }
+}
+

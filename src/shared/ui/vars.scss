@@ -1,0 +1,102 @@
+:root {
+  --yellow: #ffc838;
+  --yellow-light: #ffd773;
+  --yellow-dark: #ffb900;
+  --violet: #7300cc;
+  --violet-shadow: rgba(116, 0, 204, 0.5);
+  --blue: #3a6df6;
+  --red: #ff0000;
+
+  --dark: #222222;
+  --gray: #a3a3a3;
+  --white: #fff;
+
+  --bg: #eaf1f5;
+  --bg-black: #232239;
+  --bg-gray: #eee;
+  --bg-red: #ff6d6d;
+
+  --gradient: linear-gradient(263deg, #315fdd 0%, #7500cb 100%);
+
+  --page-margin: 5em;
+
+  --border-radius: 30px;
+
+  --font-size-title: 25px;
+  --font-size-title-tab: 20px;
+  --font-size-title-mob: 18px;
+
+  --font-size-description: 18px;
+  --font-size-description-tab: 16px;
+  --font-size-description-mob: 10px;
+
+  --font-primary: 'Montserrat';
+
+  --duration: 0.3s;
+  --duration-slow: 1s;
+}
+
+$yellow: #ffc838;
+$white: #fff;
+$gray: #a3a3a3;
+$bg-gray: #eee;
+
+$big-xxl: 1728;
+$big-r: 1451;
+
+$desm-r: 1383;
+
+$desm-m: 1179;
+$desmm-r: 1179;
+$tab-r: 1100;
+$mtab-r: 992;
+$smtab-r: 840;
+$stab-r: 768;
+$xstab-r: 660;
+$bmob-r: 576;
+$mmob-r: 450;
+$smob-r: 400;
+$xsmob-r: 350;
+
+@mixin adpt-min($width) {
+  @media (min-width: #{$width}px) {
+    @content;
+  }
+}
+
+@mixin adpt-max($width) {
+  @media (max-width: #{$width}px) {
+    @content;
+  }
+}
+
+@mixin adpt-tab {
+  @media (max-width: #{$stab-r}px) {
+    @content;
+  }
+}
+
+@mixin adpt-mob {
+  @media (max-width: #{$bmob-r}px) {
+    @content;
+  }
+}
+
+@mixin scrollbar($size: 12px, $foreground-color: $gray, $background-color: $bg-gray, $border-radius: 20px) {
+  &::-webkit-scrollbar {
+    width: $size;
+    height: $size;
+    border-radius: $border-radius;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $foreground-color;
+    border-radius: $border-radius;
+  }
+  &::-webkit-scrollbar-track {
+    background: $background-color;
+    border-radius: $border-radius;
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: $foreground-color $background-color;
+}

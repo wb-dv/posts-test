@@ -1,0 +1,36 @@
+.PostItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1em 2em;
+
+  border-radius: var(--border-radius);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+  color: var(--dark);
+
+  &__title {
+    margin-left: 20px;
+
+    color: inherit;
+    white-space: nowrap;
+  }
+
+  &__body {
+    min-width: 1px;
+    margin-left: 20px;
+
+    overflow: hidden;
+
+    color: inherit;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__link {
+    flex-shrink: 0;
+    margin-left: 20px;
+  }
+}
+

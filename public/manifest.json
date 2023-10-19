@@ -1,0 +1,16 @@
+{
+  "name": "posts-test",
+  "icons": [
+    {
+      "src": "/favicons/android-icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicons/blog_icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+

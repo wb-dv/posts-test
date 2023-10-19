@@ -1,0 +1,16 @@
+.BackButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__arrow {
+    margin-right: 1em;
+
+    transform: rotate(90deg);
+
+    path {
+      fill: var(--dark);
+    }
+  }
+}
+
