@@ -1,87 +1,63 @@
-// import { useRef, useCallback, useDeferredValue } from 'react';
-import { FixedSizeList as List } from 'react-window';
-import AutoSizer from 'react-virtualized-auto-sizer';
-import InfiniteLoader from 'react-window-infinite-loader';
+import { useState, useEffect } from 'react';
 
 import { PostItem, useGetPostsQuery } from '@/entities/Post';
-import { useAppSelector } from '@/shared/store';
-
-import { useInfiniteScroll, useNextPage } from '../../model';
 
 import styles from './PostsList.module.scss';
 
-const postItemHeight = 86;
+const MAX_POSTS_COUNT = 100;
 
 export function PostsList() {
-  // const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const [currPost, setCurrPost] = useState(0);
+  const { data: posts, isLoading, isSuccess } = useGetPostsQuery({ start: currPost });
+  const [pageInTop, setPageInTop] = useState(false);
+  const [pageInBottom, setPageInBottom] = useState(false);
 
-  const { start, end } = useInfiniteScroll();
+  useEffect(() => {
+    if (pageInBottom) {
+      setCurrPost((prev) => (prev < MAX_POSTS_COUNT ? prev + 1 : prev));
+      setPageInBottom(false);
+    }
+  }, [pageInBottom]);
 
-  const { data, isLoading, isSuccess } = useGetPostsQuery({ start, end });
-  data;
-  const posts = useAppSelector((state) => state.posts.posts);
+  useEffect(() => {
+    if (pageInTop) {
+      setCurrPost((prev) => (prev > 0 ? prev - 1 : prev));
+      setPageInTop(false);
+    }
+  }, [pageInTop]);
 
-  const dispatchNextPage = useNextPage();
+  useEffect(() => {
+    // const scrollElement = document.scrollingElement;
 
-  // const loadMorePosts = useDeferredValue(
-  //   useCallback(
-  //     ({ scrollOffset }: ListOnScrollProps) => {
-  //       const scrollContainer = scrollContainerRef.current;
-  //       if (!scrollContainer || !isSuccess || isLoading) return;
-  //       const scrollContainerViewHeight = scrollContainer.clientHeight;
-  //       const scrollContainerAllHeight = scrollContainer.scrollHeight;
+    const handleScroll = (e: any) => {
+      if (e.target.documentElement.scrollTop < 200) {
+        setPageInTop(true);
+      }
+      if (e.target.documentElement.scrollHeight - e.target.documentElement.scrollTop - window.innerHeight < 200) {
+        setPageInBottom(true);
+        window.scrollTo(0, e.target.documentElement.scrollHeight + e.target.documentElement.scrollTop);
+      }
+    };
 
-  //       console.log('scrollOffset', scrollOffset);
-  //       console.log('scrollContainerViewHeight', scrollContainerViewHeight);
-  //       console.log('scrollContainerAllHeight', scrollContainerAllHeight);
-  //       console.log('scrollOffset + scrollContainerViewHeight', scrollOffset + scrollContainerViewHeight);
+    document.addEventListener('scroll', handleScroll);
 
-  //       console.log('scrollOffset + scrollContainerViewHeight >= scrollContainerAllHeight', scrollOffset + scrollContainerViewHeight >= scrollContainerAllHeight);
-
-  //       if (scrollOffset + scrollContainerViewHeight >= scrollContainerAllHeight - 50) {
-  //         dispatchNextPage();
-  //       }
-  //     },
-  //     [scrollContainerRef, dispatchNextPage, isSuccess, isLoading]
-  //   )
-  // );
-
-  const loadMorePosts = (startIndex: number, stopIndex: number) => {
-    console.log('loadMorePosts');
-    dispatchNextPage({ start: startIndex, end: stopIndex });
-  };
+    return () => document.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <section className={styles.PostsList}>
-      {isSuccess ? (
-        <AutoSizer>
-          {({ width, height }) => (
-            <InfiniteLoader
-              loadMoreItems={loadMorePosts}
-              itemCount={posts.length}
-              isItemLoaded={(index) => index < posts.length}
-            >
-              {({ onItemsRendered, ref }) => (
-                <List
-                  innerElementType={'ol'}
-                  width={width}
-                  height={height}
-                  itemCount={posts.length}
-                  itemSize={postItemHeight}
-                  ref={ref}
-                  onItemsRendered={onItemsRendered}
-                  // outerRef={scrollContainerRef}
-                  // onScroll={loadMorePosts}
-                >
-                  {PostItem}
-                </List>
-              )}
-            </InfiniteLoader>
-          )}
-        </AutoSizer>
-      ) : (
-        <div>No posts</div>
-      )}
+      <ul>
+        {isSuccess ? (
+          posts.map((post) => (
+            <PostItem
+              key={post.id}
+              post={post}
+            />
+          ))
+        ) : (
+          <div>No posts</div>
+        )}
+      </ul>
       {isLoading && <div>Loading...</div>}
     </section>
   );
