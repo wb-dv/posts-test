@@ -6,8 +6,8 @@ import { useAppDispatch, useAppSelector } from '@/shared/store';
 import { nextPosts } from './model';
 
 export const useInfiniteScroll = () => {
-  const start = useAppSelector((state) => state.postsList.start);
-  const end = useAppSelector((state) => state.postsList.end);
+  const start = useAppSelector((state) => state);
+  const end = useAppSelector((state) => state);
 
   return {
     start,

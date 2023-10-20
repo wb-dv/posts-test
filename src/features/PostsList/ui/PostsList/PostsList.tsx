@@ -1,63 +1,86 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-import { PostItem, useGetPostsQuery } from '@/entities/Post';
+import { PostItem, useGetPostsQuery, MAX_PAGE_COUNT } from '@/entities/Post';
 
 import styles from './PostsList.module.scss';
+import { useVirtualize } from '../../model/useVirtualize';
 
-const MAX_POSTS_COUNT = 100;
+const postHeight = 86;
+const gap = 15;
 
 export function PostsList() {
-  const [currPost, setCurrPost] = useState(0);
-  const { data: posts, isLoading, isSuccess } = useGetPostsQuery({ start: currPost });
-  const [pageInTop, setPageInTop] = useState(false);
+  // const [currPost, setCurrPost] = useState(0);
+  // const [currPage, setCurrPage] = useState(1);
+  const [currFetchPage, setCurrFetchPage] = useState(1);
+  const { data: posts, isLoading, isSuccess, isFetching } = useGetPostsQuery({ page: currFetchPage });
+  // const [pageInTop, setPageInTop] = useState(false);
   const [pageInBottom, setPageInBottom] = useState(false);
+  const containerRef = useRef<HTMLElement>(null);
+
+  const postsCount = isSuccess ? posts.length : 0;
+
+  const virtualizedPosts = useVirtualize({
+    containerRef: containerRef,
+    elementHight: postHeight,
+    elemsCount: postsCount,
+    gap: gap,
+  });
+
+  // console.log('slicedPosts', slicedPosts);
+  // console.log('start', start);
+  // console.log('end', end);
 
   useEffect(() => {
     if (pageInBottom) {
-      setCurrPost((prev) => (prev < MAX_POSTS_COUNT ? prev + 1 : prev));
+      !isFetching && setCurrFetchPage((prev) => (prev < MAX_PAGE_COUNT ? prev + 1 : prev));
       setPageInBottom(false);
     }
-  }, [pageInBottom]);
+  }, [pageInBottom, isFetching]);
 
   useEffect(() => {
-    if (pageInTop) {
-      setCurrPost((prev) => (prev > 0 ? prev - 1 : prev));
-      setPageInTop(false);
-    }
-  }, [pageInTop]);
+    const scrollElement = containerRef.current;
 
-  useEffect(() => {
-    // const scrollElement = document.scrollingElement;
+    if (!scrollElement) return;
 
-    const handleScroll = (e: any) => {
-      if (e.target.documentElement.scrollTop < 200) {
-        setPageInTop(true);
-      }
-      if (e.target.documentElement.scrollHeight - e.target.documentElement.scrollTop - window.innerHeight < 200) {
+    const handleScroll = () => {
+      if (scrollElement.scrollHeight - scrollElement.scrollTop - window.innerHeight < 50) {
         setPageInBottom(true);
-        window.scrollTo(0, e.target.documentElement.scrollHeight + e.target.documentElement.scrollTop);
+        // window.scrollTo(0, document.documentElement.scrollHeight + document.documentElement.scrollTop);
       }
     };
 
-    document.addEventListener('scroll', handleScroll);
+    scrollElement.addEventListener('scroll', handleScroll);
 
-    return () => document.removeEventListener('scroll', handleScroll);
+    return () => scrollElement.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <section className={styles.PostsList}>
-      <ul>
-        {isSuccess ? (
-          posts.map((post) => (
-            <PostItem
-              key={post.id}
-              post={post}
-            />
-          ))
-        ) : (
-          <div>No posts</div>
-        )}
-      </ul>
+    <section
+      className={styles.PostsList}
+      ref={containerRef}
+    >
+      {isSuccess ? (
+        <ul style={{ height: postsCount * (postHeight + gap) - gap, position: 'relative' }}>
+          {virtualizedPosts.map(({ index, offset }) => {
+            const post = posts[index];
+
+            return (
+              <PostItem
+                style={{
+                  height: postHeight,
+                  position: 'absolute',
+                  top: 0,
+                  transform: `translateY(${offset}px)`,
+                }}
+                key={post.id}
+                post={post}
+              />
+            );
+          })}
+        </ul>
+      ) : (
+        <div>No posts</div>
+      )}
       {isLoading && <div>Loading...</div>}
     </section>
   );

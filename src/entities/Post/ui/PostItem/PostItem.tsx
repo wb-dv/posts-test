@@ -11,13 +11,17 @@ import styles from './PostItem.module.scss';
 interface IPostItem {
   post: IPost;
   customClasses?: string;
+  style?: React.CSSProperties;
 }
 
-export function PostItem({ post, customClasses = '' }: IPostItem) {
+export function PostItem({ post, customClasses = '', style = {} }: IPostItem) {
   const { id, title, body } = post;
 
   return (
-    <li className={clsx(styles.PostItem, customClasses)}>
+    <li
+      className={clsx(styles.PostItem, customClasses)}
+      style={style}
+    >
       <span>{id}.</span>
       <h3 className={styles.PostItem__title}>{title}</h3>
       <p className={styles.PostItem__body}>{body}</p>
@@ -30,4 +34,3 @@ export function PostItem({ post, customClasses = '' }: IPostItem) {
     </li>
   );
 }
-
