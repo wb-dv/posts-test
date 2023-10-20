@@ -1,7 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+import { MAX_PAGE_COUNT } from '@/entities/Post';
+
 interface INextPostsAction {
-  payload: { page: number; limit: number };
+  payload: { nextPage: number };
   type: string;
 }
 
@@ -9,19 +11,16 @@ const postsListSlice = createSlice({
   name: 'postsList',
   initialState: {
     page: 1,
-    maxPage: 10,
-    limit: 10,
+    maxPageCount: MAX_PAGE_COUNT,
   },
   reducers: {
-    nextPosts(state, { payload: { page, limit } }: INextPostsAction) {
-      if (page > state.maxPage) return;
-      state.page = page;
-      state.limit = limit;
+    nextPage(state, { payload: { nextPage } }: INextPostsAction) {
+      if (nextPage > state.maxPageCount) return;
+      state.page = nextPage;
     },
   },
 });
 
-export const { nextPosts } = postsListSlice.actions;
+export const { nextPage } = postsListSlice.actions;
 
 export const postsListRedusers = postsListSlice.reducer;
-

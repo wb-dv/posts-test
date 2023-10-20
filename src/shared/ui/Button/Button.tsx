@@ -1,6 +1,8 @@
 import clsx from 'clsx';
-import styles from './Button.module.scss';
+
 import { Variants } from '..';
+
+import styles from './Button.module.scss';
 
 type TagNames = keyof JSX.IntrinsicElements;
 

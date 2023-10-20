@@ -1,8 +1,12 @@
 import { useParams } from 'react-router-dom';
 
-import styles from './PostPage.module.scss';
-import { BackButton } from '@/features/Navigation/ui/BackButton/BackButton';
+import { BackButton } from '@/features/Navigation';
+
+import { PostCommetsList, PostInfo } from '@/entities/Post';
+
 import { Container } from '@/shared/ui';
+
+import styles from './PostPage.module.scss';
 
 export function PostPage() {
   const { id } = useParams();
@@ -11,7 +15,13 @@ export function PostPage() {
     <main className={styles.PostPage}>
       <Container>
         <BackButton />
-        Post id: {id}
+        {!!id && (
+          <PostInfo
+            postId={id}
+            customClasses={styles.PostPage__info}
+          />
+        )}
+        {!!id && <PostCommetsList postId={id} />}
       </Container>
     </main>
   );

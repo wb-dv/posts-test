@@ -1,4 +1,14 @@
+@import '@shared/ui/vars.scss';
+
 .PostPage {
   margin-top: var(--page-margin);
+
+  &__info {
+    margin: 3em 0;
+
+    @include adpt-tab {
+      margin: 2em 0;
+    }
+  }
 }
 
