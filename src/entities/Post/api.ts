@@ -12,13 +12,21 @@ export interface IPost {
   body: string;
 }
 
+export interface IComment {
+  postId: number;
+  id: number;
+  name: string;
+  email: string;
+  body: string;
+}
+
 export const POSTS_LIMIT = 15;
 export const MAX_POSTS_COUNT = 100;
 export const MAX_PAGE_COUNT = Math.ceil(MAX_POSTS_COUNT / POSTS_LIMIT);
 
 const postApi = api.injectEndpoints({
   endpoints: ({ query }) => ({
-    getPost: query<IPost, number>({
+    getPost: query<IPost, string>({
       query: (id) => `/posts/${id}`,
     }),
     getPosts: query<IPost[], IGetPostsparams>({
@@ -27,9 +35,12 @@ const postApi = api.injectEndpoints({
       merge: (a, b) => [...a, ...b],
       forceRefetch: ({ currentArg, previousArg }) => currentArg?.page !== previousArg?.page,
     }),
+    getCommentsByPostId: query<IComment[], string>({
+      query: (id) => `/posts/${id}/comments`,
+    }),
   }),
 });
 
-export const { useGetPostQuery, useGetPostsQuery } = postApi;
+export const { useGetPostQuery, useGetPostsQuery, useGetCommentsByPostIdQuery } = postApi;
 
 export const usePostsQueryState = postApi.endpoints.getPosts.useQueryState;

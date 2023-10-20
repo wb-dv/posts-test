@@ -1,6 +1,10 @@
+@import '@shared/ui/vars.scss';
+
 .PostsList {
   width: 100%;
   height: 100vh;
   overflow: auto;
   overflow-x: hidden;
+
+  @include scrollbar;
 }

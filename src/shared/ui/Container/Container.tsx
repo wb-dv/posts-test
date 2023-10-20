@@ -7,14 +7,6 @@ interface IContainerProps {
   children: React.ReactNode;
 }
 
-export function Container({ children, customClasses = '', ...props }: IContainerProps) {
-  return (
-    <div
-      className={clsx(styles.Container, customClasses)}
-      {...props}
-    >
-      {children}
-    </div>
-  );
+export function Container({ children, customClasses = '' }: IContainerProps) {
+  return <div className={clsx(styles.Container, customClasses)}>{children}</div>;
 }
-

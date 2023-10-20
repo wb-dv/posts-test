@@ -1,11 +1,11 @@
 import { useState, useLayoutEffect, useMemo } from 'react';
 
-interface VirtualItem {
+interface IVirtualItem {
   index: number;
   offset: number;
 }
 
-interface UseVirtualizeArgs<T extends Element> {
+interface IUseVirtualizeArgs<T extends Element> {
   containerRef: React.RefObject<T>;
   elementHight: number;
   elemsCount: number;
@@ -13,8 +13,16 @@ interface UseVirtualizeArgs<T extends Element> {
   overscan?: number;
 }
 
-export const useVirtualize = <T extends Element>(args: UseVirtualizeArgs<T>): VirtualItem[] => {
+interface IUseVirtualizeValues {
+  virtualItems: IVirtualItem[];
+  fullHeight: number;
+}
+
+export const useVirtualize = <T extends Element>(args: IUseVirtualizeArgs<T>): IUseVirtualizeValues => {
   const { containerRef, elementHight, elemsCount, gap = 0, overscan = 3 } = args;
+
+  const elementHeightWithGap = elementHight + gap;
+  const fullHeight = elemsCount * elementHeightWithGap - gap;
 
   const [scrollTop, setScrollTop] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
@@ -33,35 +41,39 @@ export const useVirtualize = <T extends Element>(args: UseVirtualizeArgs<T>): Vi
 
     container.addEventListener('scroll', handleScroll);
 
-    return () => container.removeEventListener('scroll', handleScroll);
+    const ro = new ResizeObserver(([entry]) => {
+      setContainerHeight(entry.contentRect.height || entry.target.getBoundingClientRect().height);
+    });
+
+    ro.observe(container);
+
+    return () => {
+      ro.disconnect();
+      container.removeEventListener('scroll', handleScroll);
+    };
   }, [containerRef, containerHeight]);
 
   const { startIdx, endIdx } = useMemo(() => {
     const rangeStart = scrollTop;
     const rangeEnd = scrollTop + containerHeight;
 
-    let startIdx = Math.floor(rangeStart / (elementHight + gap)) - overscan;
-    let endIdx = Math.ceil(rangeEnd / (elementHight + gap)) + overscan;
+    let startIdx = Math.floor(rangeStart / elementHeightWithGap) - overscan;
+    let endIdx = Math.ceil(rangeEnd / elementHeightWithGap) + overscan;
 
     if (startIdx < 0) startIdx = 0;
     if (endIdx >= elemsCount) endIdx = elemsCount - 1;
 
-    // console.log('containerHeight', containerHeight);
     return { startIdx, endIdx };
-  }, [scrollTop, containerHeight, elemsCount, elementHight, overscan, gap]);
+  }, [scrollTop, containerHeight, elemsCount, overscan, elementHeightWithGap]);
 
-  // console.log('startIdx', startIdx);
-  // console.log('endIdx', endIdx);
-  // console.log('endIdx - startIdx', endIdx - startIdx);
-
-  const virtualItems: VirtualItem[] = [];
+  const virtualItems: IVirtualItem[] = [];
 
   for (let i = startIdx; i <= endIdx; i++) {
     virtualItems.push({
       index: i,
-      offset: i * (elementHight + gap),
+      offset: i * elementHeightWithGap,
     });
   }
 
-  return virtualItems;
+  return { virtualItems, fullHeight };
 };

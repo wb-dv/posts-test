@@ -1,0 +1,14 @@
+.PostCommetsList {
+  &__item {
+    margin-bottom: 15px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__title {
+    margin-bottom: 20px;
+  }
+}
+

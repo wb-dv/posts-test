@@ -1,2 +1,2 @@
-export { nextPosts, postsListRedusers } from './model';
-export { useInfiniteScroll, useNextPage } from './useInfiniteScroll';
+export { nextPage, postsListRedusers } from './model';
+export { useInfinitePosts } from './useInfinitePosts';

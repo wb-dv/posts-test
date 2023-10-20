@@ -1,0 +1,24 @@
+@import '@shared/ui/vars.scss';
+
+.PostComment {
+  @include card;
+
+  padding-bottom: 2em;
+  padding-top: 2em;
+
+  &__owner {
+    display: flex;
+    align-items: center;
+
+    margin-bottom: 2em;
+  }
+
+  &__ownerAvatar {
+    margin-right: 20px;
+  }
+
+  &__ownerName {
+    margin-bottom: 10px;
+  }
+}
+
